@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgroSimulador - Design e Logística</title>
+    <title>AgroSimulador - Planejamento Livre</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
     <style>
@@ -17,16 +17,7 @@
         
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; overflow: hidden; }
         
-        #sidebar {
-            width: 390px;
-            background: var(--bg-panel);
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
+        #sidebar { width: 400px; background: var(--bg-panel); box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1000; display: flex; flex-direction: column; overflow-y: auto; }
         #quadro { flex-grow: 1; background-color: #f4f1ea; background-image: radial-gradient(#d5d0c4 2px, transparent 2px); background-size: 50px 50px; }
 
         .header { background: var(--primary); color: white; padding: 18px; text-align: center; }
@@ -38,8 +29,8 @@
         .section-title { font-size: 14px; color: var(--text-dark); margin-bottom: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
 
         .input-group { margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .input-group label { font-size: 12px; color: var(--text-dark); width: 40%; font-weight: bold; }
-        .input-group select, .input-group input { width: 60%; padding: 7px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; }
+        .input-group label { font-size: 12px; color: var(--text-dark); width: 45%; font-weight: bold; }
+        .input-group select, .input-group input { width: 55%; padding: 7px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; }
 
         button { width: 100%; padding: 9px; background: var(--primary); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; margin-top: 4px;}
         button:hover { background: var(--primary-dark); }
@@ -62,8 +53,8 @@
 
     <div id="sidebar">
         <div class="header">
-            <h2>🌾 AgroSimulador Pro</h2>
-            <p>Infraestrutura, Logística e Produção</p>
+            <h2>🌾 AgroSimulador Livre</h2>
+            <p>Seu negócio, suas regras.</p>
         </div>
 
         <div class="section highlight">
@@ -76,46 +67,44 @@
         </div>
 
         <div class="section">
-            <div class="section-title">2. Áreas de Produção</div>
+            <div class="section-title">2. Inserir Novo Elemento</div>
+            
             <div class="input-group">
-                <label>Atividade</label>
-                <select id="tipoCultura">
-                    <option value="soja">Lavoura de Soja</option>
-                    <option value="milho">Lavoura de Milho</option>
-                    <option value="gado_corte">Pecuária de Corte (Pasto)</option>
-                    <option value="gado_leite">Pecuária de Leite</option>
-                    <option value="reserva">Reserva Legal / APP</option>
+                <label>O que é isso?</label>
+                <input type="text" id="customNome" placeholder="Ex: Pomar, Galpão, Açude...">
+            </div>
+            
+            <div class="input-group">
+                <label>Categoria</label>
+                <select id="customCategoria">
+                    <option value="producao">Área de Produção (Hectares)</option>
+                    <option value="estrutura">Estrutura Fixa (Metros Quadrados)</option>
+                    <option value="reserva">Reserva Legal / APP (Hectares)</option>
                 </select>
             </div>
+            
             <div class="input-group">
-                <label>Área do Lote (ha)</label>
-                <input type="number" id="tamanhoLote" placeholder="Ex: 30">
+                <label>Tamanho (ha ou m²)</label>
+                <input type="number" id="customTamanho" placeholder="Ex: 50">
             </div>
-            <button onclick="gerarLote()">Inserir Área de Produção</button>
+
+            <div class="input-group">
+                <label>Custo por unidade (R$)</label>
+                <input type="number" id="customCusto" placeholder="Custo por ha ou m²" value="0">
+            </div>
+
+            <div class="input-group">
+                <label>Receita por unidade (R$)</label>
+                <input type="number" id="customReceita" placeholder="Receita por ha ou m²" value="0">
+            </div>
+
+            <button onclick="gerarElementoLivre()">Gerar no Mapa</button>
         </div>
 
         <div class="section">
-            <div class="section-title">3. Estruturas Fixas</div>
+            <div class="section-title">3. Logística e Acessos</div>
             <div class="input-group">
-                <label>Construção</label>
-                <select id="tipoEstrutura">
-                    <option value="casa">Casa Sede</option>
-                    <option value="galpao">Galpão de Máquinas</option>
-                    <option value="silo">Silo de Grãos</option>
-                    <option value="curral">Curral de Manejo</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Tamanho (m²)</label>
-                <input type="number" id="tamanhoEstrutura" placeholder="Ex: 500">
-            </div>
-            <button onclick="gerarEstrutura()">Gerar Construção</button>
-        </div>
-
-        <div class="section">
-            <div class="section-title">4. Logística e Acessos</div>
-            <div class="input-group">
-                <label>Elemento</label>
+                <label>Traçar no Mapa</label>
                 <select id="tipoLogistica">
                     <option value="estrada_terra">🚜 Estrada de Terra</option>
                     <option value="estrada_asfalto">🛣️ Estrada Pavimentada</option>
@@ -133,16 +122,16 @@
                     <div class="metric-title">Uso do Espaço</div>
                     <div class="metric-value" id="usoArea">0 / Livre</div>
                 </div>
-                <div class="metric-card" style="border-left-color: #e67e22;">
-                    <div class="metric-title">Estruturas Fixas</div>
-                    <div class="metric-value" id="qtdEstruturas">0 un</div>
+                <div class="metric-card" style="border-left-color: #388e3c;">
+                    <div class="metric-title">Área Preservada</div>
+                    <div class="metric-value" id="percentualReserva">0% do total</div>
                 </div>
                 <div class="metric-card" style="border-left-color: #c0392b;">
-                    <div class="metric-title">Investimento Total</div>
+                    <div class="metric-title">Custo / Investimento</div>
                     <div class="metric-value cost" id="totalCusto">R$ 0</div>
                 </div>
                 <div class="metric-card" style="border-left-color: #27ae60;">
-                    <div class="metric-title">Faturamento Safras</div>
+                    <div class="metric-title">Faturamento Estimado</div>
                     <div class="metric-value profit" id="totalReceita">R$ 0</div>
                 </div>
             </div>
@@ -154,37 +143,18 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
     <script>
-        // --- CONFIGURAÇÃO DO MAPA ---
         var mapa = L.map('quadro', { crs: L.CRS.Simple, minZoom: -3, maxZoom: 3, zoomControl: false });
         L.control.zoom({ position: 'topright' }).addTo(mapa);
         mapa.setView([1000, 1000], -1);
 
-        // Ativa os controles nativos do Geoman (Mãozinha para arrastar, Borracha para apagar e Edição)
         mapa.pm.addControls({
-            position: 'topright',
-            drawMarker: false, drawCircleMarker: false, drawPolyline: false, drawCircle: false, 
-            drawRectangle: false, drawPolygon: false,
+            position: 'topright', drawMarker: false, drawCircleMarker: false, drawPolyline: false, 
+            drawCircle: false, drawRectangle: false, drawPolygon: false,
             editMode: true, dragMode: true, cutPolygon: true, removalMode: true,
         });
 
-        // --- BANCO DE DADOS DA SIMULAÇÃO ---
-        const dbCulturas = {
-            'soja': { nome: 'Soja', cor: '#ffd54f', custoHa: 4500, receitaHa: 7800 },
-            'milho': { nome: 'Milho', cor: '#ffb300', custoHa: 3800, receitaHa: 5500 },
-            'gado_corte': { nome: 'Gado Corte', cor: '#aed581', custoHa: 800, receitaHa: 2200 },
-            'gado_leite': { nome: 'Gado Leite', cor: '#81c784', custoHa: 2500, receitaHa: 6000 },
-            'reserva': { nome: 'Reserva Legal', cor: '#388e3c', custoHa: 50, receitaHa: 0 }
-        };
-
-        const dbEstruturas = {
-            'casa': { nome: '🏠 Casa Sede', cor: '#e57373', custoM2: 1200 },
-            'galpao': { nome: '🏭 Galpão Máquinas', cor: '#90a4ae', custoM2: 800 },
-            'silo': { nome: '🛢️ Silo Grãos', cor: '#b0bec5', custoM2: 2500 },
-            'curral': { nome: '🪵 Curral Manejo', cor: '#a1887f', custoM2: 400 }
-        };
-
         // --- ESTADO GLOBAL ---
-        let fazenda = { areaTotalDefinida: 0, totalHectaresUsados: 0, totalCusto: 0, totalReceita: 0, totalConstrucoes: 0 };
+        let fazenda = { areaTotalDefinida: 0, totalHectaresUsados: 0, hectaresReserva: 0, totalCusto: 0, totalReceita: 0 };
         let limitePropriedadeLayer = null;
         let tipoDesenhoManualAtivo = '';
         let offset = 0;
@@ -199,12 +169,14 @@
             } else {
                 divArea.innerText = `${fazenda.totalHectaresUsados.toFixed(1)} ha`;
             }
-            document.getElementById('qtdEstruturas').innerText = fazenda.totalConstrucoes + " un";
+
+            let porcentagem = fazenda.areaTotalDefinida > 0 ? ((fazenda.hectaresReserva / fazenda.areaTotalDefinida) * 100) : 0;
+            document.getElementById('percentualReserva').innerText = porcentagem.toFixed(1) + "%";
+
             document.getElementById('totalCusto').innerText = formatarMoeda(fazenda.totalCusto);
             document.getElementById('totalReceita').innerText = formatarMoeda(fazenda.totalReceita);
         }
 
-        // --- FUNÇÃO DE SINALIZAÇÃO DO TERRENO TOTAL ---
         function definirFronteiraFazenda() {
             let area = parseFloat(document.getElementById('areaTotal').value);
             if (isNaN(area) || area <= 0) { alert('Insira uma área total válida.'); return; }
@@ -212,71 +184,59 @@
             fazenda.areaTotalDefinida = area;
             if (limitePropriedadeLayer) { mapa.removeLayer(limitePropriedadeLayer); }
 
-            // Escala real: calcula o lado em metros
             let ladoMetros = Math.sqrt(area * 10000);
-
-            // Desenha o quadrado verde grande de fundo. 'interactive: false' impede que ele seja arrastado por engano.
             limitePropriedadeLayer = L.rectangle([[1000, 1000], [1000 + ladoMetros, 1000 + ladoMetros]], {
                 color: '#2e7d32', weight: 4, dashArray: '10, 10', fillColor: '#e8f5e9', fillOpacity: 0.4, interactive: false
             }).addTo(mapa);
 
-            // Dá o zoom automático perfeito para enquadrar a fazenda inteira
             mapa.fitBounds(limitePropriedadeLayer.getBounds());
             atualizarDashboard();
-            alert(`Fronteira gerada! O quadrado verde pontilhado representa seus ${area} hectares em escala real.`);
         }
 
-        // --- GERADOR DE LOTES AGRÍCOLAS ---
-        function gerarLote() {
-            let tipo = document.getElementById('tipoCultura').value;
-            let hectares = parseFloat(document.getElementById('tamanhoLote').value);
-            if (isNaN(hectares) || hectares <= 0) { alert('Insira uma área válida para o lote.'); return; }
+        // --- GERADOR LIVRE ---
+        function gerarElementoLivre() {
+            let nome = document.getElementById('customNome').value || 'Área sem nome';
+            let categoria = document.getElementById('customCategoria').value;
+            let tamanho = parseFloat(document.getElementById('customTamanho').value);
+            let custoUnitario = parseFloat(document.getElementById('customCusto').value) || 0;
+            let receitaUnitaria = parseFloat(document.getElementById('customReceita').value) || 0;
 
-            let dados = dbCulturas[tipo];
-            let ladoMetros = Math.sqrt(hectares * 10000);
+            if (isNaN(tamanho) || tamanho <= 0) { alert('Insira um tamanho válido.'); return; }
+
+            let ladoMetros, cor, siglaTamanho, hectaresConvertidos;
+
+            if (categoria === 'estrutura') {
+                ladoMetros = Math.sqrt(tamanho); // m² direto para metros
+                cor = '#95a5a6'; // Cinza para estruturas
+                siglaTamanho = 'm²';
+                hectaresConvertidos = tamanho / 10000;
+            } else {
+                ladoMetros = Math.sqrt(tamanho * 10000); // ha para metros
+                cor = categoria === 'reserva' ? '#2e7d32' : '#f1c40f'; // Verde escuro para reserva, Amarelo para produção livre
+                siglaTamanho = 'ha';
+                hectaresConvertidos = tamanho;
+                if (categoria === 'reserva') fazenda.hectaresReserva += tamanho;
+            }
 
             let y1 = 1050 + offset, x1 = 1050 + offset;
             let lote = L.rectangle([[y1, x1], [y1 + ladoMetros, x1 + ladoMetros]], {
-                color: '#2c3e50', weight: 1.5, fillColor: dados.cor, fillOpacity: 0.85
+                color: '#2c3e50', weight: 1.5, fillColor: cor, fillOpacity: 0.85
             }).addTo(mapa);
 
-            lote.bindTooltip(`${dados.nome}<br>${hectares} ha`, { permanent: true, direction: "center", className: "rotulo-lote" });
+            lote.bindTooltip(`${nome}<br>${tamanho} ${siglaTamanho}`, { permanent: true, direction: "center", className: "rotulo-lote" });
 
-            fazenda.totalHectaresUsados += hectares;
-            fazenda.totalCusto += (hectares * dados.custoHa);
-            fazenda.totalReceita += (hectares * dados.receitaHa);
+            fazenda.totalHectaresUsados += hectaresConvertidos;
+            fazenda.totalCusto += (tamanho * custoUnitario);
+            fazenda.totalReceita += (tamanho * receitaUnitaria);
+            
             atualizarDashboard();
 
             offset = (offset + 100) % 500;
-            document.getElementById('tamanhoLote').value = '';
+            document.getElementById('customNome').value = '';
+            document.getElementById('customTamanho').value = '';
         }
 
-        // --- GERADOR DE ESTRUTURAS FIXAS (EM M²) ---
-        function gerarEstrutura() {
-            let tipo = document.getElementById('tipoEstrutura').value;
-            let m2 = parseFloat(document.getElementById('tamanhoEstrutura').value);
-            if (isNaN(m2) || m2 <= 0) { alert('Insira um tamanho válido em m².'); return; }
-
-            let dados = dbEstruturas[tipo];
-            let ladoMetros = Math.sqrt(m2); // Calcula o tamanho do quadrado da construção em metros
-
-            let y1 = 1020 + offset, x1 = 1020 + offset;
-            let predio = L.rectangle([[y1, x1], [y1 + ladoMetros, x1 + ladoMetros]], {
-                color: '#2c3e50', weight: 2, fillColor: dados.cor, fillOpacity: 0.95
-            }).addTo(mapa);
-
-            predio.bindTooltip(`${dados.nome}<br>${m2} m²`, { permanent: true, direction: "center", className: "rotulo-lote" });
-
-            fazenda.totalHectaresUsados += (m2 / 10000); // Adiciona a fração de hectare usada
-            fazenda.totalCusto += (m2 * dados.custoM2);
-            fazenda.totalConstrucoes += 1;
-            atualizarDashboard();
-
-            offset = (offset + 60) % 400;
-            document.getElementById('tamanhoEstrutura').value = '';
-        }
-
-        // --- LOGÍSTICA E DESENHO MANUAL (ESTRADAS E PORTEIRAS) ---
+        // --- LOGÍSTICA ---
         function ativarDesenhoManual() {
             let elemento = document.getElementById('tipoLogistica').value;
             tipoDesenhoManualAtivo = elemento;
@@ -290,23 +250,16 @@
             }
         }
 
-        // Captura o momento em que o usuário termina de desenhar ou colocar a porteira na tela
         mapa.on('pm:create', function(e) {
             let layer = e.layer;
-            
             if (tipoDesenhoManualAtivo === 'estrada_terra') {
                 layer.bindTooltip("🚜 Estrada de Terra", { permanent: true, className: "rotulo-lote" });
-                fazenda.totalCusto += 3000; // Simulação de custo de abertura de estrada
             } else if (tipoDesenhoManualAtivo === 'estrada_asfalto') {
                 layer.bindTooltip("🛣️ Estrada Asfaltada", { permanent: true, className: "rotulo-lote" });
-                fazenda.totalCusto += 15000; // Custo de pavimentação por trecho
             } else if (tipoDesenhoManualAtivo === 'porteira') {
                 layer.bindTooltip("🚪 Porteira Principal", { permanent: true, className: "rotulo-lote" });
-                fazenda.totalCusto += 1200;
             }
-            
-            atualizarDashboard();
-            tipoDesenhoManualAtivo = ''; // Reseta o estado
+            tipoDesenhoManualAtivo = '';
         });
     </script>
 </body>
