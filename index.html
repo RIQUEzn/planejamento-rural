@@ -3,30 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planejamento Rural - Simulador</title>
+    <title>Planejamento Rural - Escala Real</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
     <style>
-        body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #e0e0e0; }
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
         
-        /* Criando o fundo com aparência de "papel milimetrado" ou quadro em branco */
         #quadro { 
             width: 100vw; 
             height: 100vh; 
             background-color: #f4f1ea; 
             background-image: radial-gradient(#d5d0c4 2px, transparent 2px); 
-            background-size: 30px 30px; 
+            background-size: 50px 50px; /* Grade de referência */
         }
         
         #painel {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
             z-index: 1000;
             background: white;
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            width: 280px;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 14px; margin-bottom: 5px; font-weight: bold; }
+        .input-group input { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        
+        button { 
+            width: 100%; padding: 10px; background: #2e7d32; color: white; 
+            border: none; border-radius: 4px; font-weight: bold; cursor: pointer; 
+        }
+        button:hover { background: #1b5e20; }
+
+        /* Estilo do texto que fica no meio do lote */
+        .rotulo-lote {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            font-size: 14px;
+            font-weight: bold;
+            color: #000;
+            text-shadow: 1px 1px 3px rgba(255,255,255,0.9);
             text-align: center;
         }
     </style>
@@ -34,8 +55,20 @@
 <body>
 
     <div id="painel">
-        <h3>📐 Prancheta do Produtor</h3>
-        <p>Use o menu à esquerda para<br>desenhar e fatiar sua fazenda.</p>
+        <h3 style="margin-top: 0;">🚜 Gerador de Lotes</h3>
+        <p style="font-size: 13px; color: #555;">Gere lotes em escala real e arraste para organizar a propriedade.</p>
+        
+        <div class="input-group">
+            <label>Nome do Lote (ex: Soja, Pasto):</label>
+            <input type="text" id="nomeLote" placeholder="Digite o nome...">
+        </div>
+        
+        <div class="input-group">
+            <label>Tamanho (em Hectares):</label>
+            <input type="number" id="tamanhoLote" placeholder="Ex: 50">
+        </div>
+        
+        <button onclick="gerarLote()">Gerar Lote na Prancheta</button>
     </div>
 
     <div id="quadro"></div>
@@ -43,30 +76,78 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
     <script>
-        // Cria um espaço plano fictício (sem coordenadas reais de satélite)
+        // Inicia a prancheta usando um sistema de coordenadas simples (1 unidade = 1 metro)
         var mapa = L.map('quadro', {
             crs: L.CRS.Simple,
-            minZoom: -2
+            minZoom: -3,
+            maxZoom: 2
         });
 
-        // Define o tamanho da nossa "folha de papel" virtual
-        var bounds = [[0,0], [1000,1000]];
-        mapa.fitBounds(bounds);
+        // Foca a câmera no centro da "folha"
+        mapa.setView([1000, 1000], -1);
 
-        // Adiciona as ferramentas de desenho na tela
+        // Ferramentas de edição (ativadas para o usuário poder cortar ou ajustar as formas depois de geradas)
         mapa.pm.addControls({
             position: 'topleft',
-            drawMarker: false,
-            drawCircleMarker: false,
-            drawPolyline: false,
-            drawCircle: false,
-            drawRectangle: true, // Permite desenhar retângulos
-            drawPolygon: true,   // Permite desenhar formas livres (fatias)
-            editMode: true,      // Permite editar os pontos
-            dragMode: true,      // Permite arrastar as formas
-            cutPolygon: true,    // Ferramenta de cortar um pedaço ao meio
-            removalMode: true,   // Borracha para apagar
+            drawMarker: false, drawCircleMarker: false, drawPolyline: false,
+            drawCircle: false, drawRectangle: false, drawPolygon: false,
+            editMode: true, dragMode: true, cutPolygon: true, removalMode: true,
         });
+
+        var offset = 0; // Deslocamento para que as formas geradas não caiam umas sobre as outras
+
+        function gerarLote() {
+            var nome = document.getElementById('nomeLote').value || 'Sem Nome';
+            var hectares = parseFloat(document.getElementById('tamanhoLote').value);
+
+            if (isNaN(hectares) || hectares <= 0) {
+                alert('Por favor, insira um tamanho válido em hectares.');
+                return;
+            }
+
+            // Matemática de Escala: 1 hectare = 10.000 m²
+            // Para criar um quadrado perfeito, tiramos a raiz quadrada da área em m² para saber o tamanho de cada lado.
+            var areaM2 = hectares * 10000;
+            var ladoMeters = Math.sqrt(areaM2);
+
+            // Coordenadas da base onde o quadrado vai surgir
+            var y1 = 500 + offset;
+            var x1 = 500 + offset;
+            var y2 = y1 + ladoMeters;
+            var x2 = x1 + ladoMeters;
+
+            // Gera uma cor fixa agradável com base em nomes comuns, ou aleatória se não for reconhecido
+            var cor = '#81c784'; // Verde padrão
+            var nomeLower = nome.toLowerCase();
+            if (nomeLower.includes('soja') || nomeLower.includes('milho')) cor = '#ffd54f'; // Amarelo
+            if (nomeLower.includes('pasto') || nomeLower.includes('gado')) cor = '#aed581'; // Verde claro
+            if (nomeLower.includes('reserva') || nomeLower.includes('mata')) cor = '#388e3c'; // Verde escuro
+            if (nomeLower.includes('sede') || nomeLower.includes('casa')) cor = '#e0e0e0'; // Cinza
+            if (nomeLower.includes('água') || nomeLower.includes('represa')) cor = '#4fc3f7'; // Azul
+
+            // Desenha a forma no mapa
+            var lote = L.rectangle([[y1, x1], [y2, x2]], {
+                color: '#333',
+                weight: 1,
+                fillColor: cor,
+                fillOpacity: 0.8
+            }).addTo(mapa);
+
+            // Adiciona a etiqueta com o nome e o tamanho dentro do lote
+            lote.bindTooltip(nome + "<br>" + hectares + " ha", {
+                permanent: true,
+                direction: "center",
+                className: "rotulo-lote"
+            });
+
+            // Prepara a próxima posição para não empilhar lotes
+            offset += 150;
+            if (offset > 1500) offset = 0;
+
+            // Limpa os campos para o próximo
+            document.getElementById('nomeLote').value = '';
+            document.getElementById('tamanhoLote').value = '';
+        }
     </script>
 </body>
 </html>
