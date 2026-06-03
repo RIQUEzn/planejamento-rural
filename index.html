@@ -3,44 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planejamento Rural</title>
+    <title>Planejamento Rural - Simulador</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
     <style>
-        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        /* O mapa vai ocupar a tela toda */
-        #mapa { width: 100vw; height: 100vh; }
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #e0e0e0; }
         
-        /* Painel flutuante simples */
+        /* Criando o fundo com aparência de "papel milimetrado" ou quadro em branco */
+        #quadro { 
+            width: 100vw; 
+            height: 100vh; 
+            background-color: #f4f1ea; 
+            background-image: radial-gradient(#d5d0c4 2px, transparent 2px); 
+            background-size: 30px 30px; 
+        }
+        
         #painel {
             position: absolute;
             top: 10px;
-            left: 50px;
+            right: 10px;
             z-index: 1000;
             background: white;
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
     <div id="painel">
-        <h3>🌱 Meu Agronegócio</h3>
-        <p>Aproxime para encontrar a propriedade.</p>
+        <h3>📐 Prancheta do Produtor</h3>
+        <p>Use o menu à esquerda para<br>desenhar e fatiar sua fazenda.</p>
     </div>
 
-    <div id="mapa"></div>
+    <div id="quadro"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
     <script>
-        // Inicia o mapa centrado no Brasil (Latitude, Longitude, Zoom)
-        var mapa = L.map('mapa').setView([-14.2350, -51.9253], 5);
+        // Cria um espaço plano fictício (sem coordenadas reais de satélite)
+        var mapa = L.map('quadro', {
+            crs: L.CRS.Simple,
+            minZoom: -2
+        });
 
-        // Adiciona a camada de imagem de satélite (Esri World Imagery)
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-        }).addTo(mapa);
+        // Define o tamanho da nossa "folha de papel" virtual
+        var bounds = [[0,0], [1000,1000]];
+        mapa.fitBounds(bounds);
+
+        // Adiciona as ferramentas de desenho na tela
+        mapa.pm.addControls({
+            position: 'topleft',
+            drawMarker: false,
+            drawCircleMarker: false,
+            drawPolyline: false,
+            drawCircle: false,
+            drawRectangle: true, // Permite desenhar retângulos
+            drawPolygon: true,   // Permite desenhar formas livres (fatias)
+            editMode: true,      // Permite editar os pontos
+            dragMode: true,      // Permite arrastar as formas
+            cutPolygon: true,    // Ferramenta de cortar um pedaço ao meio
+            removalMode: true,   // Borracha para apagar
+        });
     </script>
 </body>
 </html>
