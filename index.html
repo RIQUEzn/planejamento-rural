@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgroSimulador - Planejamento Avançado</title>
+    <title>AgroSimulador - Design e Logística</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
     <style>
@@ -18,7 +18,7 @@
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; overflow: hidden; }
         
         #sidebar {
-            width: 380px;
+            width: 390px;
             background: var(--bg-panel);
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             z-index: 1000;
@@ -29,115 +29,122 @@
 
         #quadro { flex-grow: 1; background-color: #f4f1ea; background-image: radial-gradient(#d5d0c4 2px, transparent 2px); background-size: 50px 50px; }
 
-        .header { background: var(--primary); color: white; padding: 20px; text-align: center; }
-        .header h2 { margin: 0; font-size: 22px; }
-        .header p { margin: 5px 0 0 0; font-size: 13px; opacity: 0.9; }
+        .header { background: var(--primary); color: white; padding: 18px; text-align: center; }
+        .header h2 { margin: 0; font-size: 20px; }
+        .header p { margin: 5px 0 0 0; font-size: 12px; opacity: 0.9; }
 
-        .section { padding: 18px; border-bottom: 1px solid #eee; }
-        .section.highlight { background-color: #f1f8e9; }
-        .section-title { font-size: 15px; color: var(--text-dark); margin-bottom: 12px; font-weight: bold; }
+        .section { padding: 15px; border-bottom: 1px solid #eee; }
+        .section.highlight { background-color: #e8f5e9; border-left: 5px solid var(--primary); }
+        .section-title { font-size: 14px; color: var(--text-dark); margin-bottom: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .input-group { margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .input-group label { font-size: 13px; color: var(--text-light); width: 40%; font-weight: bold; }
-        .input-group select, .input-group input { width: 60%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; }
+        .input-group { margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .input-group label { font-size: 12px; color: var(--text-dark); width: 40%; font-weight: bold; }
+        .input-group select, .input-group input { width: 60%; padding: 7px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; }
 
-        button { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 5px;}
+        button { width: 100%; padding: 9px; background: var(--primary); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; margin-top: 4px;}
         button:hover { background: var(--primary-dark); }
         button.secondary { background: #34495e; }
         button.secondary:hover { background: #2c3e50; }
+        button.accent { background: #d35400; }
+        button.accent:hover { background: #b33939; }
 
-        .metric-card { background: #f8f9fa; border-radius: 6px; padding: 12px; margin-bottom: 8px; border-left: 4px solid var(--primary); }
-        .metric-title { font-size: 11px; color: var(--text-light); text-transform: uppercase; font-weight: bold; }
-        .metric-value { font-size: 18px; font-weight: bold; color: var(--text-dark); margin-top: 3px; }
+        .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .metric-card { background: #f8f9fa; border-radius: 6px; padding: 10px; border-left: 4px solid var(--primary); }
+        .metric-title { font-size: 10px; color: var(--text-light); text-transform: uppercase; font-weight: bold; }
+        .metric-value { font-size: 15px; font-weight: bold; color: var(--text-dark); margin-top: 2px; }
         .metric-value.profit { color: #27ae60; }
         .metric-value.cost { color: #c0392b; }
-        .metric-value.warning { color: #e67e22; }
 
-        .rotulo-lote { background: rgba(255,255,255,0.9); border: 1px solid #999; border-radius: 4px; font-size: 12px; font-weight: bold; text-align: center; padding: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .rotulo-lote { background: rgba(255,255,255,0.95); border: 1px solid #777; border-radius: 4px; font-size: 11px; font-weight: bold; text-align: center; padding: 3px 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
     <div id="sidebar">
         <div class="header">
-            <h2>🌾 AgroSimulador</h2>
-            <p>Planejamento Estratégico da Propriedade</p>
+            <h2>🌾 AgroSimulador Pro</h2>
+            <p>Infraestrutura, Logística e Produção</p>
         </div>
 
         <div class="section highlight">
-            <div class="section-title">1. Dados da Propriedade</div>
+            <div class="section-title">1. Área Total do Terreno</div>
             <div class="input-group">
-                <label>Tamanho Total (ha)</label>
-                <input type="number" id="areaTotal" placeholder="Ex: 500">
+                <label>Área da Fazenda (ha)</label>
+                <input type="number" id="areaTotal" placeholder="Ex: 150">
             </div>
-            <button class="secondary" onclick="definirAreaTotal()">Travar Tamanho da Fazenda</button>
+            <button class="secondary" onclick="definirFronteiraFazenda()">Gerar Limite da Fazenda</button>
         </div>
 
         <div class="section">
-            <div class="section-title">2. Lotes e Negócios</div>
-            
+            <div class="section-title">2. Áreas de Produção</div>
             <div class="input-group">
                 <label>Atividade</label>
                 <select id="tipoCultura">
-                    <optgroup label="Grãos e Cereais">
-                        <option value="soja">Soja</option>
-                        <option value="milho">Milho Safrinha</option>
-                        <option value="trigo">Trigo</option>
-                        <option value="arroz">Arroz Irrigado</option>
-                    </optgroup>
-                    <optgroup label="Pecuária e Animais">
-                        <option value="gado_corte">Gado de Corte (Pasto)</option>
-                        <option value="gado_leite">Gado de Leite</option>
-                        <option value="ovinos">Ovinos / Caprinos</option>
-                        <option value="suinos">Suinocultura (Instalações)</option>
-                        <option value="aves">Avicultura (Galpões)</option>
-                    </optgroup>
-                    <optgroup label="Culturas Específicas">
-                        <option value="cafe">Café</option>
-                        <option value="cana">Cana-de-açúcar</option>
-                        <option value="fruticultura">Fruticultura (Pomar)</option>
-                        <option value="hortalicas">Hortaliças (Estufa/Campo)</option>
-                    </optgroup>
-                    <optgroup label="Silvicultura (Florestas)">
-                        <option value="eucalipto">Eucalipto / Madeira</option>
-                    </optgroup>
-                    <optgroup label="Áreas Fixas / Ambientais">
-                        <option value="reserva">Reserva Legal / APP</option>
-                        <option value="sede">Sede / Infraestrutura</option>
-                        <option value="agua">Açude / Represa</option>
-                    </optgroup>
+                    <option value="soja">Lavoura de Soja</option>
+                    <option value="milho">Lavoura de Milho</option>
+                    <option value="gado_corte">Pecuária de Corte (Pasto)</option>
+                    <option value="gado_leite">Pecuária de Leite</option>
+                    <option value="reserva">Reserva Legal / APP</option>
                 </select>
             </div>
-            
             <div class="input-group">
                 <label>Área do Lote (ha)</label>
-                <input type="number" id="tamanhoLote" placeholder="Ex: 50">
+                <input type="number" id="tamanhoLote" placeholder="Ex: 30">
             </div>
-            
-            <button onclick="gerarLote()">Gerar Lote na Planta</button>
+            <button onclick="gerarLote()">Inserir Área de Produção</button>
         </div>
 
         <div class="section">
-            <div class="section-title">3. Viabilidade Econômica</div>
-            
-            <div class="metric-card" style="border-left-color: #3498db;">
-                <div class="metric-title">Uso da Propriedade (Área)</div>
-                <div class="metric-value" id="usoArea">0 ha / Livre</div>
+            <div class="section-title">3. Estruturas Fixas</div>
+            <div class="input-group">
+                <label>Construção</label>
+                <select id="tipoEstrutura">
+                    <option value="casa">Casa Sede</option>
+                    <option value="galpao">Galpão de Máquinas</option>
+                    <option value="silo">Silo de Grãos</option>
+                    <option value="curral">Curral de Manejo</option>
+                </select>
             </div>
-
-            <div class="metric-card" style="border-left-color: #c0392b;">
-                <div class="metric-title">Investimento / Custo Total</div>
-                <div class="metric-value cost" id="totalCusto">R$ 0</div>
+            <div class="input-group">
+                <label>Tamanho (m²)</label>
+                <input type="number" id="tamanhoEstrutura" placeholder="Ex: 500">
             </div>
+            <button onclick="gerarEstrutura()">Gerar Construção</button>
+        </div>
 
-            <div class="metric-card" style="border-left-color: #27ae60;">
-                <div class="metric-title">Faturamento Estimado</div>
-                <div class="metric-value profit" id="totalReceita">R$ 0</div>
+        <div class="section">
+            <div class="section-title">4. Logística e Acessos</div>
+            <div class="input-group">
+                <label>Elemento</label>
+                <select id="tipoLogistica">
+                    <option value="estrada_terra">🚜 Estrada de Terra</option>
+                    <option value="estrada_asfalto">🛣️ Estrada Pavimentada</option>
+                    <option value="porteira">🚪 Porteira / Entrada</option>
+                </select>
             </div>
+            <button class="accent" onclick="ativarDesenhoManual()">Ativar Desenho no Mapa</button>
+            <p style="font-size:11px; color:var(--text-light); margin:5px 0 0 0; text-align:center;">Clique no botão acima e depois clique no mapa para traçar ou marcar.</p>
+        </div>
 
-            <div class="metric-card" style="border-left-color: #388e3c;">
-                <div class="metric-title">Índice de Preservação</div>
-                <div class="metric-value" id="percentualReserva">0% da área usada</div>
+        <div class="section">
+            <div class="section-title">Resultados Consolidados</div>
+            <div class="metric-grid">
+                <div class="metric-card" style="border-left-color: #3498db;">
+                    <div class="metric-title">Uso do Espaço</div>
+                    <div class="metric-value" id="usoArea">0 / Livre</div>
+                </div>
+                <div class="metric-card" style="border-left-color: #e67e22;">
+                    <div class="metric-title">Estruturas Fixas</div>
+                    <div class="metric-value" id="qtdEstruturas">0 un</div>
+                </div>
+                <div class="metric-card" style="border-left-color: #c0392b;">
+                    <div class="metric-title">Investimento Total</div>
+                    <div class="metric-value cost" id="totalCusto">R$ 0</div>
+                </div>
+                <div class="metric-card" style="border-left-color: #27ae60;">
+                    <div class="metric-title">Faturamento Safras</div>
+                    <div class="metric-value profit" id="totalReceita">R$ 0</div>
+                </div>
             </div>
         </div>
     </div>
@@ -147,10 +154,12 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
     <script>
-        var mapa = L.map('quadro', { crs: L.CRS.Simple, minZoom: -3, maxZoom: 2, zoomControl: false });
+        // --- CONFIGURAÇÃO DO MAPA ---
+        var mapa = L.map('quadro', { crs: L.CRS.Simple, minZoom: -3, maxZoom: 3, zoomControl: false });
         L.control.zoom({ position: 'topright' }).addTo(mapa);
         mapa.setView([1000, 1000], -1);
 
+        // Ativa os controles nativos do Geoman (Mãozinha para arrastar, Borracha para apagar e Edição)
         mapa.pm.addControls({
             position: 'topright',
             drawMarker: false, drawCircleMarker: false, drawPolyline: false, drawCircle: false, 
@@ -158,121 +167,147 @@
             editMode: true, dragMode: true, cutPolygon: true, removalMode: true,
         });
 
-        // BANCO DE DADOS EXPANDIDO (Custo e Receita por Hectare fictícios para simulação)
+        // --- BANCO DE DADOS DA SIMULAÇÃO ---
         const dbCulturas = {
             'soja': { nome: 'Soja', cor: '#ffd54f', custoHa: 4500, receitaHa: 7800 },
             'milho': { nome: 'Milho', cor: '#ffb300', custoHa: 3800, receitaHa: 5500 },
-            'trigo': { nome: 'Trigo', cor: '#f4d03f', custoHa: 3000, receitaHa: 4500 },
-            'arroz': { nome: 'Arroz', cor: '#85c1e9', custoHa: 6000, receitaHa: 9000 },
-            
-            'gado_corte': { nome: 'Gado (Corte)', cor: '#aed581', custoHa: 800, receitaHa: 2200 },
-            'gado_leite': { nome: 'Gado (Leite)', cor: '#81c784', custoHa: 2500, receitaHa: 6000 },
-            'ovinos': { nome: 'Ovinos', cor: '#dce775', custoHa: 1200, receitaHa: 3000 },
-            'suinos': { nome: 'Suínos', cor: '#f8bbd0', custoHa: 15000, receitaHa: 25000 },
-            'aves': { nome: 'Aves', cor: '#fff59d', custoHa: 20000, receitaHa: 35000 },
-            
-            'cafe': { nome: 'Café', cor: '#795548', custoHa: 8000, receitaHa: 15000 },
-            'cana': { nome: 'Cana', cor: '#a5d6a7', custoHa: 5500, receitaHa: 9500 },
-            'fruticultura': { nome: 'Frutas', cor: '#ff8a65', custoHa: 7000, receitaHa: 18000 },
-            'hortalicas': { nome: 'Hortifrúti', cor: '#4db6ac', custoHa: 12000, receitaHa: 30000 },
-            
-            'eucalipto': { nome: 'Eucalipto', cor: '#00796b', custoHa: 3500, receitaHa: 12000 },
-            
-            'reserva': { nome: 'Reserva', cor: '#388e3c', custoHa: 50, receitaHa: 0 },
-            'sede': { nome: 'Sede', cor: '#95a5a6', custoHa: 0, receitaHa: 0 },
-            'agua': { nome: 'Açude', cor: '#29b6f6', custoHa: 200, receitaHa: 500 }
+            'gado_corte': { nome: 'Gado Corte', cor: '#aed581', custoHa: 800, receitaHa: 2200 },
+            'gado_leite': { nome: 'Gado Leite', cor: '#81c784', custoHa: 2500, receitaHa: 6000 },
+            'reserva': { nome: 'Reserva Legal', cor: '#388e3c', custoHa: 50, receitaHa: 0 }
         };
 
-        let fazenda = {
-            areaTotalDefinida: 0,
-            totalHectares: 0,
-            totalCusto: 0,
-            totalReceita: 0,
-            hectaresReserva: 0
+        const dbEstruturas = {
+            'casa': { nome: '🏠 Casa Sede', cor: '#e57373', custoM2: 1200 },
+            'galpao': { nome: '🏭 Galpão Máquinas', cor: '#90a4ae', custoM2: 800 },
+            'silo': { nome: '🛢️ Silo Grãos', cor: '#b0bec5', custoM2: 2500 },
+            'curral': { nome: '🪵 Curral Manejo', cor: '#a1887f', custoM2: 400 }
         };
 
+        // --- ESTADO GLOBAL ---
+        let fazenda = { areaTotalDefinida: 0, totalHectaresUsados: 0, totalCusto: 0, totalReceita: 0, totalConstrucoes: 0 };
+        let limitePropriedadeLayer = null;
+        let tipoDesenhoManualAtivo = '';
         let offset = 0;
 
-        function formatarMoeda(valor) {
-            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
-
-        // Função para travar o limite da fazenda
-        function definirAreaTotal() {
-            let area = parseFloat(document.getElementById('areaTotal').value);
-            if (isNaN(area) || area <= 0) {
-                alert('Insira uma área total válida para a sua fazenda.');
-                return;
-            }
-            fazenda.areaTotalDefinida = area;
-            atualizarDashboard();
-            alert('Excelente! Tamanho da propriedade definido para ' + area + ' hectares.');
-        }
+        function formatarMoeda(valor) { return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
         function atualizarDashboard() {
-            // Atualiza o texto de Uso da Área
             let divArea = document.getElementById('usoArea');
             if (fazenda.areaTotalDefinida > 0) {
-                divArea.innerText = `${fazenda.totalHectares.toFixed(1)} ha / ${fazenda.areaTotalDefinida.toFixed(1)} ha`;
-                // Fica laranja se estiver quase estourando, vermelho se estourar
-                if (fazenda.totalHectares > fazenda.areaTotalDefinida) {
-                    divArea.className = "metric-value cost";
-                } else if (fazenda.totalHectares >= fazenda.areaTotalDefinida * 0.9) {
-                    divArea.className = "metric-value warning";
-                } else {
-                    divArea.className = "metric-value";
-                }
+                divArea.innerText = `${fazenda.totalHectaresUsados.toFixed(1)} / ${fazenda.areaTotalDefinida} ha`;
+                divArea.style.color = fazenda.totalHectaresUsados > fazenda.areaTotalDefinida ? '#c0392b' : 'var(--text-dark)';
             } else {
-                divArea.innerText = `${fazenda.totalHectares.toFixed(1)} ha (Sem limite)`;
+                divArea.innerText = `${fazenda.totalHectaresUsados.toFixed(1)} ha`;
             }
-
+            document.getElementById('qtdEstruturas').innerText = fazenda.totalConstrucoes + " un";
             document.getElementById('totalCusto').innerText = formatarMoeda(fazenda.totalCusto);
             document.getElementById('totalReceita').innerText = formatarMoeda(fazenda.totalReceita);
-            
-            let porcentagem = fazenda.totalHectares > 0 ? ((fazenda.hectaresReserva / fazenda.totalHectares) * 100) : 0;
-            document.getElementById('percentualReserva').innerText = porcentagem.toFixed(1) + "%";
         }
 
+        // --- FUNÇÃO DE SINALIZAÇÃO DO TERRENO TOTAL ---
+        function definirFronteiraFazenda() {
+            let area = parseFloat(document.getElementById('areaTotal').value);
+            if (isNaN(area) || area <= 0) { alert('Insira uma área total válida.'); return; }
+            
+            fazenda.areaTotalDefinida = area;
+            if (limitePropriedadeLayer) { mapa.removeLayer(limitePropriedadeLayer); }
+
+            // Escala real: calcula o lado em metros
+            let ladoMetros = Math.sqrt(area * 10000);
+
+            // Desenha o quadrado verde grande de fundo. 'interactive: false' impede que ele seja arrastado por engano.
+            limitePropriedadeLayer = L.rectangle([[1000, 1000], [1000 + ladoMetros, 1000 + ladoMetros]], {
+                color: '#2e7d32', weight: 4, dashArray: '10, 10', fillColor: '#e8f5e9', fillOpacity: 0.4, interactive: false
+            }).addTo(mapa);
+
+            // Dá o zoom automático perfeito para enquadrar a fazenda inteira
+            mapa.fitBounds(limitePropriedadeLayer.getBounds());
+            atualizarDashboard();
+            alert(`Fronteira gerada! O quadrado verde pontilhado representa seus ${area} hectares em escala real.`);
+        }
+
+        // --- GERADOR DE LOTES AGRÍCOLAS ---
         function gerarLote() {
             let tipo = document.getElementById('tipoCultura').value;
             let hectares = parseFloat(document.getElementById('tamanhoLote').value);
-
-            if (isNaN(hectares) || hectares <= 0) {
-                alert('Por favor, insira um tamanho válido para o lote.');
-                return;
-            }
-
-            // Trava de Segurança
-            if (fazenda.areaTotalDefinida > 0 && (fazenda.totalHectares + hectares > fazenda.areaTotalDefinida)) {
-                let confirma = confirm(`ALERTA: Adicionar este lote de ${hectares} ha fará com que a soma total ultrapasse o tamanho da propriedade (${fazenda.areaTotalDefinida} ha). Deseja gerar o bloco mesmo assim?`);
-                if (!confirma) return;
-            }
+            if (isNaN(hectares) || hectares <= 0) { alert('Insira uma área válida para o lote.'); return; }
 
             let dados = dbCulturas[tipo];
+            let ladoMetros = Math.sqrt(hectares * 10000);
 
-            let areaM2 = hectares * 10000;
-            let ladoMeters = Math.sqrt(areaM2);
-            let y1 = 500 + offset, x1 = 500 + offset;
-            let y2 = y1 + ladoMeters, x2 = x1 + ladoMeters;
-
-            let lote = L.rectangle([[y1, x1], [y2, x2]], {
-                color: '#333', weight: 1, fillColor: dados.cor, fillOpacity: 0.9
+            let y1 = 1050 + offset, x1 = 1050 + offset;
+            let lote = L.rectangle([[y1, x1], [y1 + ladoMetros, x1 + ladoMetros]], {
+                color: '#2c3e50', weight: 1.5, fillColor: dados.cor, fillOpacity: 0.85
             }).addTo(mapa);
 
-            let textoRotulo = `${dados.nome}<br>${hectares} ha`;
-            lote.bindTooltip(textoRotulo, { permanent: true, direction: "center", className: "rotulo-lote" });
+            lote.bindTooltip(`${dados.nome}<br>${hectares} ha`, { permanent: true, direction: "center", className: "rotulo-lote" });
 
-            fazenda.totalHectares += hectares;
+            fazenda.totalHectaresUsados += hectares;
             fazenda.totalCusto += (hectares * dados.custoHa);
             fazenda.totalReceita += (hectares * dados.receitaHa);
-            if (tipo === 'reserva') fazenda.hectaresReserva += hectares;
-
             atualizarDashboard();
 
-            offset += 250;
-            if (offset > 2000) offset = 0;
+            offset = (offset + 100) % 500;
             document.getElementById('tamanhoLote').value = '';
         }
+
+        // --- GERADOR DE ESTRUTURAS FIXAS (EM M²) ---
+        function gerarEstrutura() {
+            let tipo = document.getElementById('tipoEstrutura').value;
+            let m2 = parseFloat(document.getElementById('tamanhoEstrutura').value);
+            if (isNaN(m2) || m2 <= 0) { alert('Insira um tamanho válido em m².'); return; }
+
+            let dados = dbEstruturas[tipo];
+            let ladoMetros = Math.sqrt(m2); // Calcula o tamanho do quadrado da construção em metros
+
+            let y1 = 1020 + offset, x1 = 1020 + offset;
+            let predio = L.rectangle([[y1, x1], [y1 + ladoMetros, x1 + ladoMetros]], {
+                color: '#2c3e50', weight: 2, fillColor: dados.cor, fillOpacity: 0.95
+            }).addTo(mapa);
+
+            predio.bindTooltip(`${dados.nome}<br>${m2} m²`, { permanent: true, direction: "center", className: "rotulo-lote" });
+
+            fazenda.totalHectaresUsados += (m2 / 10000); // Adiciona a fração de hectare usada
+            fazenda.totalCusto += (m2 * dados.custoM2);
+            fazenda.totalConstrucoes += 1;
+            atualizarDashboard();
+
+            offset = (offset + 60) % 400;
+            document.getElementById('tamanhoEstrutura').value = '';
+        }
+
+        // --- LOGÍSTICA E DESENHO MANUAL (ESTRADAS E PORTEIRAS) ---
+        function ativarDesenhoManual() {
+            let elemento = document.getElementById('tipoLogistica').value;
+            tipoDesenhoManualAtivo = elemento;
+
+            if (elemento === 'estrada_terra') {
+                mapa.pm.enableDraw('Polyline', { pathOptions: { color: '#8b5a2b', weight: 6, dashArray: '6, 6' } });
+            } else if (elemento === 'estrada_asfalto') {
+                mapa.pm.enableDraw('Polyline', { pathOptions: { color: '#444444', weight: 6 } });
+            } else if (elemento === 'porteira') {
+                mapa.pm.enableDraw('Marker');
+            }
+        }
+
+        // Captura o momento em que o usuário termina de desenhar ou colocar a porteira na tela
+        mapa.on('pm:create', function(e) {
+            let layer = e.layer;
+            
+            if (tipoDesenhoManualAtivo === 'estrada_terra') {
+                layer.bindTooltip("🚜 Estrada de Terra", { permanent: true, className: "rotulo-lote" });
+                fazenda.totalCusto += 3000; // Simulação de custo de abertura de estrada
+            } else if (tipoDesenhoManualAtivo === 'estrada_asfalto') {
+                layer.bindTooltip("🛣️ Estrada Asfaltada", { permanent: true, className: "rotulo-lote" });
+                fazenda.totalCusto += 15000; // Custo de pavimentação por trecho
+            } else if (tipoDesenhoManualAtivo === 'porteira') {
+                layer.bindTooltip("🚪 Porteira Principal", { permanent: true, className: "rotulo-lote" });
+                fazenda.totalCusto += 1200;
+            }
+            
+            atualizarDashboard();
+            tipoDesenhoManualAtivo = ''; // Reseta o estado
+        });
     </script>
 </body>
 </html>
