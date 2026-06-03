@@ -193,6 +193,15 @@
             atualizarDashboard();
         }
 
+        // --- FUNÇÃO PARA CORRIGIR O TEXTO VOADOR ---
+        function grudarTextoNaForma(layer) {
+            if (layer.getTooltip()) {
+                // Se for um polígono, pega o centro. Se for um marcador (porteira), pega a coordenada exata.
+                let centro = layer.getBounds ? layer.getBounds().getCenter() : layer.getLatLng();
+                layer.getTooltip().setLatLng(centro);
+            }
+        }
+
         // --- GERADOR LIVRE ---
         function gerarElementoLivre() {
             let nome = document.getElementById('customNome').value || 'Área sem nome';
@@ -206,13 +215,13 @@
             let ladoMetros, cor, siglaTamanho, hectaresConvertidos;
 
             if (categoria === 'estrutura') {
-                ladoMetros = Math.sqrt(tamanho); // m² direto para metros
-                cor = '#95a5a6'; // Cinza para estruturas
+                ladoMetros = Math.sqrt(tamanho); 
+                cor = '#95a5a6'; 
                 siglaTamanho = 'm²';
                 hectaresConvertidos = tamanho / 10000;
             } else {
-                ladoMetros = Math.sqrt(tamanho * 10000); // ha para metros
-                cor = categoria === 'reserva' ? '#2e7d32' : '#f1c40f'; // Verde escuro para reserva, Amarelo para produção livre
+                ladoMetros = Math.sqrt(tamanho * 10000); 
+                cor = categoria === 'reserva' ? '#2e7d32' : '#f1c40f'; 
                 siglaTamanho = 'ha';
                 hectaresConvertidos = tamanho;
                 if (categoria === 'reserva') fazenda.hectaresReserva += tamanho;
@@ -224,6 +233,10 @@
             }).addTo(mapa);
 
             lote.bindTooltip(`${nome}<br>${tamanho} ${siglaTamanho}`, { permanent: true, direction: "center", className: "rotulo-lote" });
+
+            // Aplica a correção do texto no momento de arrastar ou redimensionar
+            lote.on('pm:drag', () => grudarTextoNaForma(lote));
+            lote.on('pm:edit', () => grudarTextoNaForma(lote));
 
             fazenda.totalHectaresUsados += hectaresConvertidos;
             fazenda.totalCusto += (tamanho * custoUnitario);
@@ -259,6 +272,11 @@
             } else if (tipoDesenhoManualAtivo === 'porteira') {
                 layer.bindTooltip("🚪 Porteira Principal", { permanent: true, className: "rotulo-lote" });
             }
+            
+            // Aplica a correção do texto para as coisas desenhadas à mão também
+            layer.on('pm:drag', () => grudarTextoNaForma(layer));
+            layer.on('pm:edit', () => grudarTextoNaForma(layer));
+            
             tipoDesenhoManualAtivo = '';
         });
     </script>
