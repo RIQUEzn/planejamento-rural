@@ -3,72 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planejamento Rural - Escala Real</title>
+    <title>AgroSimulador - Planejamento Inteligente</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
     <style>
-        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-        
-        #quadro { 
-            width: 100vw; 
-            height: 100vh; 
-            background-color: #f4f1ea; 
-            background-image: radial-gradient(#d5d0c4 2px, transparent 2px); 
-            background-size: 50px 50px; /* Grade de referência */
+        :root {
+            --primary: #2e7d32;
+            --bg-panel: #ffffff;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
         }
         
-        #painel {
-            position: absolute;
-            top: 15px;
-            right: 15px;
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Layout Principal: Painel na Esquerda, Mapa na Direita */
+        #sidebar {
+            width: 350px;
+            background: var(--bg-panel);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
             z-index: 1000;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            width: 280px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
         }
+
+        #quadro { flex-grow: 1; background-color: #f4f1ea; background-image: radial-gradient(#d5d0c4 2px, transparent 2px); background-size: 50px 50px; }
+
+        /* Estilização do Painel */
+        .header { background: var(--primary); color: white; padding: 20px; text-align: center; }
+        .header h2 { margin: 0; font-size: 22px; }
+        .header p { margin: 5px 0 0 0; font-size: 13px; opacity: 0.9; }
+
+        .section { padding: 20px; border-bottom: 1px solid #eee; }
+        .section-title { font-size: 16px; color: var(--text-dark); margin-bottom: 15px; font-weight: bold; display: flex; justify-content: space-between; }
 
         .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 14px; margin-bottom: 5px; font-weight: bold; }
-        .input-group input { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        
-        button { 
-            width: 100%; padding: 10px; background: #2e7d32; color: white; 
-            border: none; border-radius: 4px; font-weight: bold; cursor: pointer; 
-        }
+        .input-group label { display: block; font-size: 13px; color: var(--text-light); margin-bottom: 5px; }
+        .input-group select, .input-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+
+        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px; }
         button:hover { background: #1b5e20; }
 
-        /* Estilo do texto que fica no meio do lote */
-        .rotulo-lote {
-            background: transparent;
-            border: none;
-            box-shadow: none;
-            font-size: 14px;
-            font-weight: bold;
-            color: #000;
-            text-shadow: 1px 1px 3px rgba(255,255,255,0.9);
-            text-align: center;
-        }
+        /* Dashboard Financeiro */
+        .metric-card { background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--primary); }
+        .metric-title { font-size: 12px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+        .metric-value { font-size: 20px; font-weight: bold; color: var(--text-dark); margin-top: 5px; }
+        .metric-value.profit { color: #27ae60; }
+        .metric-value.cost { color: #c0392b; }
+
+        /* Estilo dos rótulos no mapa */
+        .rotulo-lote { background: rgba(255,255,255,0.9); border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); font-size: 12px; font-weight: bold; text-align: center; padding: 5px; }
     </style>
 </head>
 <body>
 
-    <div id="painel">
-        <h3 style="margin-top: 0;">🚜 Gerador de Lotes</h3>
-        <p style="font-size: 13px; color: #555;">Gere lotes em escala real e arraste para organizar a propriedade.</p>
-        
-        <div class="input-group">
-            <label>Nome do Lote (ex: Soja, Pasto):</label>
-            <input type="text" id="nomeLote" placeholder="Digite o nome...">
+    <div id="sidebar">
+        <div class="header">
+            <h2>🌾 AgroSimulador</h2>
+            <p>Planejamento e Viabilidade</p>
         </div>
-        
-        <div class="input-group">
-            <label>Tamanho (em Hectares):</label>
-            <input type="number" id="tamanhoLote" placeholder="Ex: 50">
+
+        <div class="section">
+            <div class="section-title">Adicionar Nova Área</div>
+            
+            <div class="input-group">
+                <label>Tipo de Uso / Cultura</label>
+                <select id="tipoCultura">
+                    <option value="soja">Soja (Alta Tecnologia)</option>
+                    <option value="milho">Milho Safrinha</option>
+                    <option value="pasto">Pastagem (Pecuária)</option>
+                    <option value="reserva">Reserva Legal / APP</option>
+                    <option value="sede">Sede / Infraestrutura</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>Tamanho (Hectares)</label>
+                <input type="number" id="tamanhoLote" placeholder="Ex: 100">
+            </div>
+            
+            <button onclick="gerarLote()">Planejar Lote</button>
         </div>
-        
-        <button onclick="gerarLote()">Gerar Lote na Prancheta</button>
+
+        <div class="section">
+            <div class="section-title">
+                Dashboard da Fazenda
+                <span id="totalHa" style="color: var(--primary); font-size: 14px;">0 ha</span>
+            </div>
+            
+            <div class="metric-card" style="border-left-color: #c0392b;">
+                <div class="metric-title">Estimativa de Custo (Safra)</div>
+                <div class="metric-value cost" id="totalCusto">R$ 0</div>
+            </div>
+
+            <div class="metric-card" style="border-left-color: #27ae60;">
+                <div class="metric-title">Estimativa de Faturamento</div>
+                <div class="metric-value profit" id="totalReceita">R$ 0</div>
+            </div>
+
+            <div class="metric-card" style="border-left-color: #388e3c;">
+                <div class="metric-title">Área Preservada (Reserva/APP)</div>
+                <div class="metric-value" id="percentualReserva">0%</div>
+            </div>
+        </div>
     </div>
 
     <div id="quadro"></div>
@@ -76,78 +113,94 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
     <script>
-        // Inicia a prancheta usando um sistema de coordenadas simples (1 unidade = 1 metro)
-        var mapa = L.map('quadro', {
-            crs: L.CRS.Simple,
-            minZoom: -3,
-            maxZoom: 2
-        });
-
-        // Foca a câmera no centro da "folha"
+        // --- 1. CONFIGURAÇÃO DA PRANCHETA ---
+        var mapa = L.map('quadro', { crs: L.CRS.Simple, minZoom: -3, maxZoom: 2, zoomControl: false });
+        L.control.zoom({ position: 'topright' }).addTo(mapa);
         mapa.setView([1000, 1000], -1);
 
-        // Ferramentas de edição (ativadas para o usuário poder cortar ou ajustar as formas depois de geradas)
         mapa.pm.addControls({
-            position: 'topleft',
-            drawMarker: false, drawCircleMarker: false, drawPolyline: false,
-            drawCircle: false, drawRectangle: false, drawPolygon: false,
+            position: 'topright',
+            drawMarker: false, drawCircleMarker: false, drawPolyline: false, drawCircle: false, 
+            drawRectangle: false, drawPolygon: false,
             editMode: true, dragMode: true, cutPolygon: true, removalMode: true,
         });
 
-        var offset = 0; // Deslocamento para que as formas geradas não caiam umas sobre as outras
+        // --- 2. BANCO DE DADOS DE INTELIGÊNCIA AGRONÔMICA ---
+        // Valores fictícios para simulação (Custo e Receita por Hectare)
+        const dbCulturas = {
+            'soja': { nome: 'Soja', cor: '#ffd54f', custoHa: 4500, receitaHa: 7800 },
+            'milho': { nome: 'Milho', cor: '#ffb300', custoHa: 3800, receitaHa: 5500 },
+            'pasto': { nome: 'Pasto', cor: '#aed581', custoHa: 800, receitaHa: 2200 },
+            'reserva': { nome: 'Reserva Legal', cor: '#388e3c', custoHa: 50, receitaHa: 0 },
+            'sede': { nome: 'Infraestrutura', cor: '#95a5a6', custoHa: 0, receitaHa: 0 }
+        };
+
+        // --- 3. VARIÁVEIS DE ESTADO DA FAZENDA ---
+        let fazenda = {
+            totalHectares: 0,
+            totalCusto: 0,
+            totalReceita: 0,
+            hectaresReserva: 0
+        };
+
+        let offset = 0;
+
+        // --- 4. FUNÇÕES DE LÓGICA E MATEMÁTICA ---
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function atualizarDashboard() {
+            document.getElementById('totalHa').innerText = fazenda.totalHectares.toFixed(1) + " ha";
+            document.getElementById('totalCusto').innerText = formatarMoeda(fazenda.totalCusto);
+            document.getElementById('totalReceita').innerText = formatarMoeda(fazenda.totalReceita);
+            
+            let porcentagem = fazenda.totalHectares > 0 ? ((fazenda.hectaresReserva / fazenda.totalHectares) * 100) : 0;
+            document.getElementById('percentualReserva').innerText = porcentagem.toFixed(1) + "%";
+        }
 
         function gerarLote() {
-            var nome = document.getElementById('nomeLote').value || 'Sem Nome';
-            var hectares = parseFloat(document.getElementById('tamanhoLote').value);
+            let tipo = document.getElementById('tipoCultura').value;
+            let hectares = parseFloat(document.getElementById('tamanhoLote').value);
 
             if (isNaN(hectares) || hectares <= 0) {
                 alert('Por favor, insira um tamanho válido em hectares.');
                 return;
             }
 
-            // Matemática de Escala: 1 hectare = 10.000 m²
-            // Para criar um quadrado perfeito, tiramos a raiz quadrada da área em m² para saber o tamanho de cada lado.
-            var areaM2 = hectares * 10000;
-            var ladoMeters = Math.sqrt(areaM2);
+            let dados = dbCulturas[tipo];
 
-            // Coordenadas da base onde o quadrado vai surgir
-            var y1 = 500 + offset;
-            var x1 = 500 + offset;
-            var y2 = y1 + ladoMeters;
-            var x2 = x1 + ladoMeters;
+            // Matemática de Escala (1ha = 10.000m²)
+            let areaM2 = hectares * 10000;
+            let ladoMeters = Math.sqrt(areaM2);
+            let y1 = 500 + offset, x1 = 500 + offset;
+            let y2 = y1 + ladoMeters, x2 = x1 + ladoMeters;
 
-            // Gera uma cor fixa agradável com base em nomes comuns, ou aleatória se não for reconhecido
-            var cor = '#81c784'; // Verde padrão
-            var nomeLower = nome.toLowerCase();
-            if (nomeLower.includes('soja') || nomeLower.includes('milho')) cor = '#ffd54f'; // Amarelo
-            if (nomeLower.includes('pasto') || nomeLower.includes('gado')) cor = '#aed581'; // Verde claro
-            if (nomeLower.includes('reserva') || nomeLower.includes('mata')) cor = '#388e3c'; // Verde escuro
-            if (nomeLower.includes('sede') || nomeLower.includes('casa')) cor = '#e0e0e0'; // Cinza
-            if (nomeLower.includes('água') || nomeLower.includes('represa')) cor = '#4fc3f7'; // Azul
-
-            // Desenha a forma no mapa
-            var lote = L.rectangle([[y1, x1], [y2, x2]], {
-                color: '#333',
-                weight: 1,
-                fillColor: cor,
-                fillOpacity: 0.8
+            // Criar o Lote no Mapa
+            let lote = L.rectangle([[y1, x1], [y2, x2]], {
+                color: '#2c3e50', weight: 2, fillColor: dados.cor, fillOpacity: 0.85
             }).addTo(mapa);
 
-            // Adiciona a etiqueta com o nome e o tamanho dentro do lote
-            lote.bindTooltip(nome + "<br>" + hectares + " ha", {
-                permanent: true,
-                direction: "center",
-                className: "rotulo-lote"
-            });
+            // Adicionar Rótulo Inteligente
+            let textoRotulo = `${dados.nome}<br>${hectares} ha<br><span style="color:#27ae60;font-size:10px;">${formatarMoeda(hectares * dados.receitaHa)}</span>`;
+            lote.bindTooltip(textoRotulo, { permanent: true, direction: "center", className: "rotulo-lote" });
 
-            // Prepara a próxima posição para não empilhar lotes
-            offset += 150;
-            if (offset > 1500) offset = 0;
+            // Atualizar os números da Fazenda
+            fazenda.totalHectares += hectares;
+            fazenda.totalCusto += (hectares * dados.custoHa);
+            fazenda.totalReceita += (hectares * dados.receitaHa);
+            if (tipo === 'reserva') fazenda.hectaresReserva += hectares;
 
-            // Limpa os campos para o próximo
-            document.getElementById('nomeLote').value = '';
+            atualizarDashboard();
+
+            offset += 200;
+            if (offset > 2000) offset = 0;
             document.getElementById('tamanhoLote').value = '';
         }
+
+        // --- 5. EVENTO PARA QUANDO O USUÁRIO APAGAR UM LOTE (Avançado) ---
+        // (Nota: Para um cálculo perfeito ao apagar ou redimensionar, precisaríamos recalcular a área do polígono no mapa. 
+        // Neste MVP, estamos mostrando o poder da geração inicial para viabilidade).
     </script>
 </body>
 </html>
