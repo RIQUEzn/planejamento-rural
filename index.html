@@ -68,12 +68,10 @@
 
         <div class="section">
             <div class="section-title">2. Inserir Novo Elemento</div>
-            
             <div class="input-group">
                 <label>O que é isso?</label>
-                <input type="text" id="customNome" placeholder="Ex: Pomar, Galpão, Açude...">
+                <input type="text" id="customNome" placeholder="Ex: Pomar, Galpão...">
             </div>
-            
             <div class="input-group">
                 <label>Categoria</label>
                 <select id="customCategoria">
@@ -82,22 +80,18 @@
                     <option value="reserva">Reserva Legal / APP (Hectares)</option>
                 </select>
             </div>
-            
             <div class="input-group">
                 <label>Tamanho (ha ou m²)</label>
                 <input type="number" id="customTamanho" placeholder="Ex: 50">
             </div>
-
             <div class="input-group">
                 <label>Custo por unidade (R$)</label>
                 <input type="number" id="customCusto" placeholder="Custo por ha ou m²" value="0">
             </div>
-
             <div class="input-group">
                 <label>Receita por unidade (R$)</label>
                 <input type="number" id="customReceita" placeholder="Receita por ha ou m²" value="0">
             </div>
-
             <button onclick="gerarElementoLivre()">Gerar no Mapa</button>
         </div>
 
@@ -153,7 +147,6 @@
             editMode: true, dragMode: true, cutPolygon: true, removalMode: true,
         });
 
-        // --- ESTADO GLOBAL ---
         let fazenda = { areaTotalDefinida: 0, totalHectaresUsados: 0, hectaresReserva: 0, totalCusto: 0, totalReceita: 0 };
         let limitePropriedadeLayer = null;
         let tipoDesenhoManualAtivo = '';
@@ -172,7 +165,6 @@
 
             let porcentagem = fazenda.areaTotalDefinida > 0 ? ((fazenda.hectaresReserva / fazenda.areaTotalDefinida) * 100) : 0;
             document.getElementById('percentualReserva').innerText = porcentagem.toFixed(1) + "%";
-
             document.getElementById('totalCusto').innerText = formatarMoeda(fazenda.totalCusto);
             document.getElementById('totalReceita').innerText = formatarMoeda(fazenda.totalReceita);
         }
@@ -193,16 +185,13 @@
             atualizarDashboard();
         }
 
-        // --- FUNÇÃO PARA CORRIGIR O TEXTO VOADOR ---
         function grudarTextoNaForma(layer) {
             if (layer.getTooltip()) {
-                // Se for um polígono, pega o centro. Se for um marcador (porteira), pega a coordenada exata.
                 let centro = layer.getBounds ? layer.getBounds().getCenter() : layer.getLatLng();
                 layer.getTooltip().setLatLng(centro);
             }
         }
 
-        // --- GERADOR LIVRE ---
         function gerarElementoLivre() {
             let nome = document.getElementById('customNome').value || 'Área sem nome';
             let categoria = document.getElementById('customCategoria').value;
@@ -234,7 +223,6 @@
 
             lote.bindTooltip(`${nome}<br>${tamanho} ${siglaTamanho}`, { permanent: true, direction: "center", className: "rotulo-lote" });
 
-            // Aplica a correção do texto no momento de arrastar ou redimensionar
             lote.on('pm:drag', () => grudarTextoNaForma(lote));
             lote.on('pm:edit', () => grudarTextoNaForma(lote));
 
@@ -249,15 +237,15 @@
             document.getElementById('customTamanho').value = '';
         }
 
-        // --- LOGÍSTICA ---
+        // --- A CORREÇÃO ESTÁ AQUI: Trocado 'Polyline' por 'Line' ---
         function ativarDesenhoManual() {
             let elemento = document.getElementById('tipoLogistica').value;
             tipoDesenhoManualAtivo = elemento;
 
             if (elemento === 'estrada_terra') {
-                mapa.pm.enableDraw('Polyline', { pathOptions: { color: '#8b5a2b', weight: 6, dashArray: '6, 6' } });
+                mapa.pm.enableDraw('Line', { pathOptions: { color: '#8b5a2b', weight: 6, dashArray: '6, 6' } });
             } else if (elemento === 'estrada_asfalto') {
-                mapa.pm.enableDraw('Polyline', { pathOptions: { color: '#444444', weight: 6 } });
+                mapa.pm.enableDraw('Line', { pathOptions: { color: '#444444', weight: 6 } });
             } else if (elemento === 'porteira') {
                 mapa.pm.enableDraw('Marker');
             }
@@ -273,7 +261,6 @@
                 layer.bindTooltip("🚪 Porteira Principal", { permanent: true, className: "rotulo-lote" });
             }
             
-            // Aplica a correção do texto para as coisas desenhadas à mão também
             layer.on('pm:drag', () => grudarTextoNaForma(layer));
             layer.on('pm:edit', () => grudarTextoNaForma(layer));
             
